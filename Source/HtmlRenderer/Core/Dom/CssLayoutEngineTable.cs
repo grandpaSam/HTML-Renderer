@@ -606,11 +606,12 @@ namespace TheArtOfDev.HtmlRenderer.Core.Dom
         /// <param name="g"></param>
         private void LayoutCells(RGraphics g)
         {
+            double pageOffset = _tableBox.HtmlContainer.PageSize.Height * _tableBox.HtmlContainer.curPage;
             double startx = Math.Max(_tableBox.ClientLeft + GetHorizontalSpacing(), 0);
-            double starty = Math.Max(_tableBox.ClientTop + GetVerticalSpacing(), 0);
+            double starty = Math.Max(_tableBox.ClientTop + GetVerticalSpacing(), -pageOffset);
             double cury = starty;
             double maxRight = startx;
-            double maxBottom = 0f;
+            double maxBottom = -pageOffset;
             int currentrow = 0;
 
             // change start X by if the table should align to center or right

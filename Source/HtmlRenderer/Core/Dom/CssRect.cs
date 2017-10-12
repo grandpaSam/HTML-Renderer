@@ -278,11 +278,21 @@ namespace TheArtOfDev.HtmlRenderer.Core.Dom
 
             var remTop = (this.Top - container.MarginTop) % container.PageSize.Height;
             var remBottom = (this.Bottom - container.MarginTop) % container.PageSize.Height;
-
+            
             if (remTop > remBottom)
             {
-                this.Top += container.PageSize.Height - remTop + 1;
+                if (remTop < 0 && remBottom < 0 && this.Top < 0)
+                {
+                    this.Top += container.PageSize.Height + remBottom;
+                }
+                else
+                {
+                    this.Top += container.PageSize.Height - remTop;
+                }
                 return true;
+            }else if(container.curPage > 0)
+            {
+
             }
 
             return false;

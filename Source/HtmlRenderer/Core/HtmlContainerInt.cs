@@ -394,6 +394,7 @@ namespace TheArtOfDev.HtmlRenderer.Core
         }
 
         public RSize PageSize { get; set; }
+        public int curPage { get; set; }
 
         /// <summary>
         /// the top margin between the page start and the text

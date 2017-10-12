@@ -166,6 +166,30 @@ namespace TheArtOfDev.HtmlRenderer.WinForms
             }
         }
 
+        public RSize PageSize
+        {
+            get
+            {
+                return _htmlContainerInt.PageSize;
+            }
+            set
+            {
+                _htmlContainerInt.PageSize = value;
+            }
+        }
+
+        public int curPage
+        {
+            get
+            {
+                return _htmlContainerInt.curPage;
+            }
+            set
+            {
+                _htmlContainerInt.curPage = value;
+            }
+        }
+
         /// <summary>
         /// the parsed stylesheet data used for handling the html
         /// </summary>

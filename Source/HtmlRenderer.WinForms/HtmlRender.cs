@@ -266,10 +266,14 @@ namespace TheArtOfDev.HtmlRenderer.WinForms
         /// <param name="imageLoad">optional: can be used to overwrite image resolution logic</param>
         /// <returns>the actual size of the rendered html</returns>
         public static SizeF RenderGdiPlus(Graphics g, string html, PointF location, SizeF maxSize, CssData cssData = null,
-            EventHandler<HtmlStylesheetLoadEventArgs> stylesheetLoad = null, EventHandler<HtmlImageLoadEventArgs> imageLoad = null)
+            EventHandler<HtmlStylesheetLoadEventArgs> stylesheetLoad = null, EventHandler<HtmlImageLoadEventArgs> imageLoad = null, PrintPageSettings printSettings = null)
         {
             ArgChecker.AssertArgNotNull(g, "g");
-            return RenderClip(g, html, location, maxSize, cssData, true, stylesheetLoad, imageLoad);
+            if(printSettings == null)
+            {
+                printSettings = new PrintPageSettings();
+            }
+            return RenderClip(g, html, location, maxSize, cssData, true, stylesheetLoad, imageLoad, printSettings);
         }
 
 #if !MONO
@@ -698,7 +702,8 @@ namespace TheArtOfDev.HtmlRenderer.WinForms
         /// <param name="stylesheetLoad">optional: can be used to overwrite stylesheet resolution logic</param>
         /// <param name="imageLoad">optional: can be used to overwrite image resolution logic</param>
         /// <returns>the actual size of the rendered html</returns>
-        private static SizeF RenderClip(Graphics g, string html, PointF location, SizeF maxSize, CssData cssData, bool useGdiPlusTextRendering, EventHandler<HtmlStylesheetLoadEventArgs> stylesheetLoad, EventHandler<HtmlImageLoadEventArgs> imageLoad)
+        private static SizeF RenderClip(Graphics g, string html, PointF location, SizeF maxSize, CssData cssData, bool useGdiPlusTextRendering, 
+            EventHandler<HtmlStylesheetLoadEventArgs> stylesheetLoad, EventHandler<HtmlImageLoadEventArgs> imageLoad, PrintPageSettings printSettings = null)
         {
             Region prevClip = null;
             if (maxSize.Height > 0)
@@ -707,7 +712,7 @@ namespace TheArtOfDev.HtmlRenderer.WinForms
                 g.SetClip(new RectangleF(location, maxSize));
             }
 
-            var actualSize = RenderHtml(g, html, location, maxSize, cssData, useGdiPlusTextRendering, stylesheetLoad, imageLoad);
+            var actualSize = RenderHtml(g, html, location, maxSize, cssData, useGdiPlusTextRendering, stylesheetLoad, imageLoad, printSettings);
 
             if (prevClip != null)
             {
@@ -734,18 +739,24 @@ namespace TheArtOfDev.HtmlRenderer.WinForms
         /// <param name="stylesheetLoad">optional: can be used to overwrite stylesheet resolution logic</param>
         /// <param name="imageLoad">optional: can be used to overwrite image resolution logic</param>
         /// <returns>the actual size of the rendered html</returns>
-        private static SizeF RenderHtml(Graphics g, string html, PointF location, SizeF maxSize, CssData cssData, bool useGdiPlusTextRendering, EventHandler<HtmlStylesheetLoadEventArgs> stylesheetLoad, EventHandler<HtmlImageLoadEventArgs> imageLoad)
+        private static SizeF RenderHtml(Graphics g, string html, PointF location, SizeF maxSize, CssData cssData, bool useGdiPlusTextRendering, 
+            EventHandler<HtmlStylesheetLoadEventArgs> stylesheetLoad, EventHandler<HtmlImageLoadEventArgs> imageLoad, PrintPageSettings printSettings = null)
         {
             SizeF actualSize = SizeF.Empty;
 
             if (!string.IsNullOrEmpty(html))
             {
-                using (var container = new HtmlContainer())
+                using (HtmlContainer container = new HtmlContainer())
                 {
                     container.Location = location;
                     container.MaxSize = maxSize;
                     container.AvoidAsyncImagesLoading = true;
                     container.AvoidImagesLateLoading = true;
+                    if(printSettings != null)
+                    {
+                        container.PageSize = printSettings.pageSize;
+                        container.curPage = printSettings.pageNum;
+                    }
                     container.UseGdiPlusTextRendering = useGdiPlusTextRendering;
 
                     if (stylesheetLoad != null)

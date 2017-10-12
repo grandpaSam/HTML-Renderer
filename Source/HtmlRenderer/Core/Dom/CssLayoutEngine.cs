@@ -310,7 +310,6 @@ namespace TheArtOfDev.HtmlRenderer.Core.Dom
                         }
 
                         curx = word.Left + word.FullWidth;
-
                         maxRight = Math.Max(maxRight, word.Right);
                         maxbottom = Math.Max(maxbottom, word.Bottom);
 

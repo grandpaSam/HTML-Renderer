@@ -652,12 +652,13 @@ namespace TheArtOfDev.HtmlRenderer.Core.Dom
                     else
                     {
                         left = ContainingBlock.Location.X + ContainingBlock.ActualPaddingLeft + ActualMarginLeft + ContainingBlock.ActualBorderLeftWidth;
-                        top = (prevSibling == null && ParentBox != null ? ParentBox.ClientTop : ParentBox == null ? Location.Y : 0) + MarginTopCollapse(prevSibling) + (prevSibling != null ? prevSibling.ActualBottom + prevSibling.ActualBorderBottomWidth : 0);
+                        double pageOffset = _htmlContainer.PageSize.Height * _htmlContainer.curPage;
+                        top = (prevSibling == null && ParentBox != null ? ParentBox.ClientTop : ParentBox == null ? Location.Y - pageOffset : prevSibling == null ? -pageOffset : 0) + MarginTopCollapse(prevSibling) + (prevSibling != null ? prevSibling.ActualBottom + prevSibling.ActualBorderBottomWidth : 0);
                         Location = new RPoint(left, top);
                         ActualBottom = top;
                     }
                 }
-
+               
                 //If we're talking about a table here..
                 if (Display == CssConstants.Table || Display == CssConstants.InlineTable)
                 {
@@ -693,7 +694,26 @@ namespace TheArtOfDev.HtmlRenderer.Core.Dom
                 }
             }
             ActualBottom = Math.Max(ActualBottom, Location.Y + ActualHeight);
+            if (DomUtils.ContainsInlinesOnly(this) && Location.Y < 0 && ActualBottom > 0)
+            {
+                double diff = Math.Abs(Location.Y) + 8;//Need to get page margin correct.
+                Location = new RPoint(Location.X, Location.Y + diff);
 
+                foreach(CssBox lineBox in FirstHostingLineBox.RelatedBoxes)
+                {
+                    RRect rectangle = FirstHostingLineBox.Rectangles[lineBox];
+                    if(rectangle == null)
+                    {
+                        continue;
+                    }
+                    rectangle.Y += diff;
+                    FirstHostingLineBox.Rectangles[lineBox] = rectangle;
+                }
+                foreach(CssRect rect in FirstHostingLineBox.Words)
+                {
+                    rect.Rectangle = new RRect(rect.Left, rect.Top + diff, rect.Width, rect.Height);
+                }
+            }
             CreateListItemBox(g);
 
             if (!IsFixed)
